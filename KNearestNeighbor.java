@@ -1,23 +1,27 @@
 /*
  * I worked with Devin Lacrosse to complete this assignment. We definitely do not complement each other </3
  */
-package weka;
+package iris;
 
 import java.util.TreeMap;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
+/**
+ *
+ * @author jorda_000
+ */
 
 public class KNearestNeighbor extends Classifier{
     
-    Instances trainningSet;
-    int k = 10;
+    Instances trainingSet;
+    int k = 3;
     
    
     @Override
     public void buildClassifier(Instances _trainningSet) throws Exception 
     {
-        trainningSet = new Instances(_trainningSet);
+        trainingSet = new Instances(_trainningSet);
     }
 
     @Override
@@ -28,9 +32,9 @@ public class KNearestNeighbor extends Classifier{
         //of items from the top and compare them to eachother and then choose the 
         //nearest one of those
         TreeMap<Double, Double> mapDistances = new TreeMap<>();
-        for (int i = 0; i < trainningSet.numInstances(); i++)
+        for (int i = 0; i < trainingSet.numInstances(); i++)
         {
-            Instance tmpInstance = trainningSet.instance(i);
+            Instance tmpInstance = trainingSet.instance(i);
             mapDistances.put(getDistance(tmpInstance, newInstance),tmpInstance.classValue());
         }
         
@@ -42,7 +46,7 @@ public class KNearestNeighbor extends Classifier{
     public double findNearestGroup(TreeMap<Double, Double> mapOfDistances, int k)
     {
          
-        int[] tally = new int[trainningSet.numClasses()];
+        int[] tally = new int[trainingSet.numClasses()];
         for (int i = 0; i < k; i ++)
         {
             double index = mapOfDistances.values().iterator().next();
