@@ -1,11 +1,11 @@
 package iris;
 
-import java.util.Random;
 import weka.classifiers.Evaluation;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.Debug.Random;
 import weka.core.Instances;
 import weka.filters.Filter;
-import weka.core.converters.ConverterUtils.DataSource;
-import weka.filters.unsupervised.instance.RemovePercentage;
+import weka.filters.unsupervised.attribute.Standardize;
 
 /**
  *
@@ -20,32 +20,53 @@ public class Iris {
      * set from it, and runs it with the hard coded classifier
      */
     public static void main(String[] args) throws Exception {
-        String filename = "C:\\Users\\jorda_000\\Documents\\CS450\\iris.csv";
+        String file = "C:\\Users\\jorda_000\\Documents\\CS450\\iris.csv";
         
-        DataSource source = new DataSource(filename);
-        Instances data = source.getDataSet();
+        double number = .7;
+ 
+        DataSource source = new DataSource(file); // sets the source to the data file
+        Instances data = source.getDataSet(); // gets the source and stores it into data
+
+        data.setClassIndex(data.numAttributes()-1); // sets the index to 4 instead of 5 
+                                                       // because 
+        data.randomize(new Random()); // randomizes the data set
         
-        // Set up data and filter
-        data.setClassIndex(data.numAttributes() - 1);
-        data.randomize(new Random());
-        RemovePercentage remove = new RemovePercentage();
+        // the maximum number of data points we want, and we want 70% of them thus we multiple
+        // by 'number' which is .7
+        int trainIndex = (int) Math.round(data.numInstances() * number); 
         
-        // Set up training data
-        remove.setPercentage(30);
-        remove.setInputFormat(data);
-        Instances train = Filter.useFilter(data, remove);
+        // we want 30% of the data to test so we take all the data and subtract the trainIndex because
+        // its 70% of the data so therefore we will have 100% - 70% = 30%
+        int testIndex = data.numInstances() - trainIndex;
         
-        // Set up the testing data
-        remove.setInputFormat(data);
-        remove.setInvertSelection(true);
-        Instances test = Filter.useFilter(data, remove);
+        // this is another instance of the dataset but its 70% of the data we use the number generated
+        // for the trainIndex as the maximum number of data points we want from the dataset
+        // it starts at 0 and goes until the max number
+        Instances trainSet = new Instances(data, 0, trainIndex);
+        Instances testSet = new Instances(data, trainIndex, testIndex);
         
-        // Apply classifier && run test
-        HardCodedClassifier hardcode = new HardCodedClassifier();
-        hardcode.buildClassifier(train);
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(hardcode, test);
-        System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+        //standardizes the tainSet
+        Standardize standardizedData = new Standardize();
+        standardizedData.setInputFormat(trainSet);
+        
+        //makes a new instance of data to test on the classifier
+        Instances newTestSet = Filter.useFilter(testSet, standardizedData);
+        Instances newTrainSet = Filter.useFilter(trainSet, standardizedData);
+ 
+        //HardCodedClassifier hc = new HardCodedClassifier();
+        //hc.buildClassifier(data);
+        
+        KNearestNeighbor knn = new KNearestNeighbor();
+        knn.buildClassifier(newTrainSet);
+        
+        // evaluates the trainset
+        Evaluation eval = new Evaluation(newTrainSet);
+        
+                
+        // formates the evaluation based on the setting in the evaluateModel function format
+        eval.evaluateModel(knn, newTestSet);
+        System.out.println(eval.toSummaryString("\n RESULTS \n", true));
+        
     }
     
 }
