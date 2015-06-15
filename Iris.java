@@ -1,10 +1,13 @@
 package iris;
 
+import java.util.ArrayList;
+import java.util.List;
 import weka.classifiers.Evaluation;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.Debug.Random;
 import weka.core.Instances;
 import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Discretize;
 import weka.filters.unsupervised.attribute.Standardize;
 
 /**
@@ -45,9 +48,14 @@ public class Iris {
         Instances trainSet = new Instances(data, 0, trainIndex);
         Instances testSet = new Instances(data, trainIndex, testIndex);
         
-        //standardizes the tainSet
+        //standardizes the trainSet
         Standardize standardizedData = new Standardize();
         standardizedData.setInputFormat(trainSet);
+        
+        // Discretize the trainSet
+        //Discretize standardizedData = new Discretize();
+        //standardizedData.setBins(3);
+        //standardizedData.setInputFormat(trainSet);
         
         //makes a new instance of data to test on the classifier
         Instances newTestSet = Filter.useFilter(testSet, standardizedData);
@@ -56,17 +64,27 @@ public class Iris {
         //HardCodedClassifier hc = new HardCodedClassifier();
         //hc.buildClassifier(data);
         
-        KNearestNeighbor knn = new KNearestNeighbor();
-        knn.buildClassifier(newTrainSet);
+        //KNearestNeighbor knn = new KNearestNeighbor();
+        //knn.buildClassifier(newTrainSet);
+        
+        // Number of neurons in each layer
+        List<Integer> neuronsPerLayer = new ArrayList<>();
+        neuronsPerLayer.add(newTrainSet.numAttributes() - 1);   // 4 inputs
+        neuronsPerLayer.add(newTrainSet.numClasses());          // 3 classifications
+        int numIterations = 20000;
+        
+        Network neuralNetwork = new Network(neuronsPerLayer, numIterations);
+        neuralNetwork.buildClassifier(newTrainSet);
         
         // evaluates the trainset
         Evaluation eval = new Evaluation(newTrainSet);
         
                 
         // formates the evaluation based on the setting in the evaluateModel function format
-        eval.evaluateModel(knn, newTestSet);
+        eval.evaluateModel(neuralNetwork, newTestSet);
         System.out.println(eval.toSummaryString("\n RESULTS \n", true));
         
     }
     
 }
+        
