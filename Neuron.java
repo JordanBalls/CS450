@@ -15,6 +15,9 @@ import java.util.List;
 public class Neuron {
     
     List<Double> weights = new ArrayList<>();
+    List<Double> newWeights = weights;
+    double error = 0;
+    double outputValue = 0;
     
     // Constructor
     public Neuron(int inputCount) // pass in number of nodes
@@ -35,11 +38,9 @@ public class Neuron {
             sum += weights.get(i) * inputs.get(i);
         }
         
-        // Return decision
-        if(sum > 0)
-            return 1;
-        else
-            return 0;
+        outputValue = (1 / (1 + Math.pow(Math.E, sum * -1)));
+        // Return activation value
+        return outputValue;
         
     }
     
@@ -49,4 +50,13 @@ public class Neuron {
         return weights.get(index);
     }
     
+    public void setNewWeight(int index, double value)
+    {
+        newWeights.set(index, value);
+    }
+    
+    public void updateWeights()
+    {
+        weights = newWeights;
+    }
 }
